@@ -1,35 +1,91 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+
+import Footer from './components/Footer';
+import Home from './pages/Home';
+
+import Login from './pages/Login';
+import Register from './pages/Register';
+
+
+
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <Router>
+      <div className="app-container">
+        
+        <main className="main-content">
+          <Toaster position="top-right" />
+          <Routes>
+            <Route path="/" element={<Home />} />
+           
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            
+           
+            
+            {/* Additional Pages */}
+            <Route path="/about" element={
+              <div className="page-container">
+                <h1 className="page-title">About Us</h1>
+                <p className="page-text">We are a leading e-commerce platform offering the best products at competitive prices.</p>
+              </div>
+            } />
+            <Route path="/contact" element={
+              <div className="page-container">
+                <h1 className="page-title">Contact Us</h1>
+                <p className="page-text">Email: support@ecommerce.com</p>
+                <p className="page-text">Phone: (123) 456-7890</p>
+              </div>
+            } />
+            <Route path="/shipping" element={
+              <div className="page-container">
+                <h1 className="page-title">Shipping Information</h1>
+                <p className="page-text">We offer fast and reliable shipping to all locations.</p>
+              </div>
+            } />
+            <Route path="/returns" element={
+              <div className="page-container">
+                <h1 className="page-title">Returns Policy</h1>
+                <p className="page-text">30-day return policy on all products.</p>
+              </div>
+            } />
+            <Route path="/faq" element={
+              <div className="container mx-auto px-4 py-16">
+                <h1 className="text-3xl font-bold mb-8">Frequently Asked Questions</h1>
+                <div className="space-y-4">
+                  <div>
+                    <h2 className="text-xl font-semibold">How do I track my order?</h2>
+                    <p className="text-gray-600">You will receive a tracking number via email once your order ships.</p>
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold">What payment methods do you accept?</h2>
+                    <p className="text-gray-600">We accept all major credit cards, PayPal, and bank transfers.</p>
+                  </div>
+                </div>
+              </div>
+            } />
+            
+            {/* 404 Page */}
+            <Route path="*" element={
+              <div className="not-found">
+                <div className="not-found-content">
+                  <h1 className="not-found-title">404</h1>
+                  <h2 className="not-found-subtitle">Page Not Found</h2>
+                  <p className="not-found-text">The page you are looking for doesn't exist or has been moved.</p>
+                  <Link to="/" className="btn btn-primary">
+                    Go Back Home
+                  </Link>
+                </div>
+              </div>
+            } />
+          </Routes>
+        </main>
+        <Footer />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </Router>
+  );
 }
 
-export default App
+export default App;

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Star, Heart, Eye, Loader2 } from 'lucide-react';
-import { formatPrice } from '../lib/utils';
+
 import { assets } from '../assets/assets';
 import toast from 'react-hot-toast';
 import useCartStore from '../store/cartStore';
