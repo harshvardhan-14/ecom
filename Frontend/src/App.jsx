@@ -1,11 +1,16 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-
+import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
+import Products from './pages/Products';
+
+
 
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Profile from './pages/Profile';
+
 
 
 
@@ -14,16 +19,19 @@ function App() {
   return (
     <Router>
       <div className="app-container">
-        
+        <Navbar />
         <main className="main-content">
           <Toaster position="top-right" />
           <Routes>
             <Route path="/" element={<Home />} />
-           
+            <Route path="/products" element={<Products />} />
+            
+            
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             
-           
+        
+            
             
             {/* Additional Pages */}
             <Route path="/about" element={
@@ -67,19 +75,7 @@ function App() {
               </div>
             } />
             
-            {/* 404 Page */}
-            <Route path="*" element={
-              <div className="not-found">
-                <div className="not-found-content">
-                  <h1 className="not-found-title">404</h1>
-                  <h2 className="not-found-subtitle">Page Not Found</h2>
-                  <p className="not-found-text">The page you are looking for doesn't exist or has been moved.</p>
-                  <Link to="/" className="btn btn-primary">
-                    Go Back Home
-                  </Link>
-                </div>
-              </div>
-            } />
+            
           </Routes>
         </main>
         <Footer />

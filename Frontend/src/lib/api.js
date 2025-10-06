@@ -20,63 +20,95 @@ api.interceptors.request.use((config) => {
 
 // Auth API
 export const authAPI = {
-  register: (data) => api.post('/auth/register', data),
-  login: (data) => api.post('/auth/login', data),
-  getMe: () => api.get('/auth/me'),
+  login: (credentials) => api.post('/auth/login', credentials),
+  register: (userData) => api.post('/auth/register', userData),
+  logout: () => api.post('/auth/logout'),
+  getProfile: () => api.get('/auth/profile'),
+  updateProfile: (userData) => api.put('/auth/profile', userData),
 };
 
 // Products API
 export const productsAPI = {
   getAll: (params) => api.get('/products', { params }),
   getById: (id) => api.get(`/products/${id}`),
-  create: (data) => api.post('/products', data),
-  update: (id, data) => api.put(`/products/${id}`, data),
-  delete: (id) => api.delete(`/products/${id}`),
+  getFeatured: () => api.get('/products/featured'),
+  getByCategory: (category) => api.get(`/products/category/${category}`),
+  search: (query) => api.get('/products/search', { params: { q: query } }),
 };
 
 // Categories API
 export const categoriesAPI = {
   getAll: () => api.get('/categories'),
   getById: (id) => api.get(`/categories/${id}`),
-  create: (data) => api.post('/categories', data),
-  update: (id, data) => api.put(`/categories/${id}`, data),
-  delete: (id) => api.delete(`/categories/${id}`),
 };
 
 // Cart API
 export const cartAPI = {
-  get: () => api.get('/cart'),
-  add: (data) => api.post('/cart', data),
-  update: (id, data) => api.put(`/cart/${id}`, data),
-  remove: (id) => api.delete(`/cart/${id}`),
-  clear: () => api.delete('/cart'),
+  getCart: () => api.get('/cart'),
+  addToCart: (productId, quantity) => api.post('/cart', { productId, quantity }),
+  updateCartItem: (productId, quantity) => api.put(`/cart/${productId}`, { quantity }),
+  removeFromCart: (productId) => api.delete(`/cart/${productId}`),
+  clearCart: () => api.delete('/cart'),
 };
 
 // Orders API
 export const ordersAPI = {
-  getAll: (params) => api.get('/orders', { params }),
-  getAllAdmin: (params) => api.get('/orders/all', { params }),
-  getById: (id) => api.get(`/orders/${id}`),
-  create: (data) => api.post('/orders', data),
-  updateStatus: (id, status) => api.patch(`/orders/${id}/status`, { status }),
-  updatePayment: (id, paymentStatus) => api.patch(`/orders/${id}/payment`, { paymentStatus }),
+  createOrder: (orderData) => api.post('/orders', orderData),
+  getOrders: (params) => api.get('/orders', { params }),
+  getOrderById: (id) => api.get(`/orders/${id}`),
+  updateOrderStatus: (id, status) => api.put(`/orders/${id}/status`, { status }),
+};
+
+// Admin API
+export const adminAPI = {
+  // Dashboard
+  getDashboard: () => api.get('/admin/dashboard'),
+
+  // Products Management
+  getAllProducts: (params) => api.get('/admin/products', { params }),
+  createProduct: (productData) => api.post('/admin/products', productData),
+  updateProduct: (id, productData) => api.put(`/admin/products/${id}`, productData),
+  deleteProduct: (id) => api.delete(`/admin/products/${id}`),
+
+  // Orders Management
+  getAllOrders: (params) => api.get('/admin/orders', { params }),
+  updateOrderStatus: (id, status) => api.put(`/admin/orders/${id}/status`, { status }),
+
+  // Users Management
+  getAllUsers: (params) => api.get('/admin/users', { params }),
+  updateUserRole: (id, role) => api.put(`/admin/users/${id}/role`, { role }),
 };
 
 // Addresses API
 export const addressesAPI = {
   getAll: () => api.get('/addresses'),
   getById: (id) => api.get(`/addresses/${id}`),
-  create: (data) => api.post('/addresses', data),
-  update: (id, data) => api.put(`/addresses/${id}`, data),
+  create: (addressData) => api.post('/addresses', addressData),
+  update: (id, addressData) => api.put(`/addresses/${id}`, addressData),
   delete: (id) => api.delete(`/addresses/${id}`),
+  setDefault: (id) => api.put(`/addresses/${id}/default`),
+};
+
+// Coupons API
+export const couponsAPI = {
+  getAll: () => api.get('/coupons'),
+  applyCoupon: (code) => api.post('/coupons/apply', { code }),
+  removeCoupon: () => api.post('/coupons/remove'),
 };
 
 // Reviews API
 export const reviewsAPI = {
-  getByProduct: (productId) => api.get(`/reviews/product/${productId}`),
-  create: (data) => api.post('/reviews', data),
-  update: (id, data) => api.put(`/reviews/${id}`, data),
-  delete: (id) => api.delete(`/reviews/${id}`),
+  getProductReviews: (productId) => api.get(`/reviews/product/${productId}`),
+  createReview: (reviewData) => api.post('/reviews', reviewData),
+  updateReview: (id, reviewData) => api.put(`/reviews/${id}`, reviewData),
+  deleteReview: (id) => api.delete(`/reviews/${id}`),
+};
+
+// Wishlist API
+export const wishlistAPI = {
+  getWishlist: () => api.get('/wishlist'),
+  addToWishlist: (productId) => api.post('/wishlist', { productId }),
+  removeFromWishlist: (productId) => api.delete(`/wishlist/${productId}`),
 };
 
 export default api;

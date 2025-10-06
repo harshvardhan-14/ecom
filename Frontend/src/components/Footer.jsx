@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, Mail } from 'lucide-react';
-//import '../styles/components/Footer.css';
+import '../styles/components/Footer.css';
 
 export default function Footer() {
   return (
     <footer className="footer">
       <div className="footer-container">
         <div className="footer-grid">
+        
           {/* About */}
           <div className="footer-section">
             <h3 className="footer-title">ShopHub</h3>
