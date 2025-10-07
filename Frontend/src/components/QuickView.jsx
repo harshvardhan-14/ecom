@@ -1,20 +1,149 @@
 import { X } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
+import useCartStore from '../store/cartStore';
+import useAuthStore from '../store/authStore';
+import useWishlistStore from '../store/wishlistStore';
+import { toast } from 'react-hot-toast';
 import '../styles/components/QuickView.css';
 
 export default function QuickView({ product, onClose }) {
+  const navigate = useNavigate();
   const [isActive, setIsActive] = useState(false);
   const [currentImage, setCurrentImage] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  
+  // Store hooks
+  const { addToCart } = useCartStore();
+  const { isAuthenticated } = useAuthStore();
+  const { 
+    addToWishlist, 
+    removeFromWishlist, 
+    toggleWishlist: toggleWishlistItem,
+    wishlistItems = [] 
+  } = useWishlistStore();
 
   useEffect(() => {
     // Add active class with a small delay to trigger the animation
     const timer = setTimeout(() => setIsActive(true), 10);
+    
     // Set the first image as current when product changes
     if (product?.images?.[0]) {
       setCurrentImage(product.images[0]);
     }
-    return () => clearTimeout(timer);
+
+    // Add/remove body class to handle scroll
+    document.body.classList.add('quick-view-open');
+    
+    return () => {
+      clearTimeout(timer);
+      document.body.classList.remove('quick-view-open');
+    };
   }, [product]);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [onClose]);
+
+  // Check if product is in wishlist
+  useEffect(() => {
+    if (product?.id && Array.isArray(wishlistItems)) {
+      const inWishlist = wishlistItems.some(item => item?.id === product.id);
+      setIsWishlisted(!!inWishlist);
+    }
+  }, [product, wishlistItems]);
+
+  const handleQuantityChange = (newQuantity) => {
+    setQuantity(Math.max(1, newQuantity));
+  };
+
+  const handleAddToCart = async (e) => {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+    
+    if (isAddingToCart) return;
+    
+    if (!isAuthenticated) {
+      toast.error('Please login to add items to cart');
+      navigate('/login');
+      return;
+    } 
+    
+    if (!product?.id) {
+      toast.error('Product information is not available');
+      return;
+    }
+    
+    try {
+      setIsAddingToCart(true);
+      
+      await addToCart({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.images?.[0],
+        quantity,
+        inStock: product.inStock
+      });
+      
+      toast.success(`${product.name} added to cart`);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error('Failed to add item to cart');
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
+  const toggleWishlist = async () => {
+    if (!isAuthenticated) {
+      toast.error('Please login to manage wishlist');
+      navigate('/login', { state: { from: window.location.pathname } });
+      return;
+    }
+
+    if (!product?.id) {
+      toast.error('Product information is not available');
+      return;
+    }
+
+    try {
+      const success = await toggleWishlistItem({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.images?.[0],
+        inStock: product.inStock
+      });
+      
+      if (success) {
+        // Update local state based on the new wishlist status
+        const newWishlistStatus = !isWishlisted;
+        setIsWishlisted(newWishlistStatus);
+        
+        // Show appropriate toast message
+        toast.success(
+          newWishlistStatus 
+            ? 'Added to wishlist' 
+            : 'Removed from wishlist'
+        );
+      }
+    } catch (error) {
+      console.error('Error updating wishlist:', error);
+      toast.error(error.response?.data?.message || 'Failed to update wishlist');
+    }
+  };
 
   if (!product) return null;
 
@@ -51,10 +180,15 @@ export default function QuickView({ product, onClose }) {
       ? Math.round(((productData.originalPrice - productData.price) / productData.originalPrice) * 100) 
       : 0);
 
-  return (
+  if (!product) return null;
+
+  return createPortal(
     <div 
       className={`quick-view-overlay ${isActive ? 'active' : ''}`}
       onClick={handleOverlayClick}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="quick-view-title"
     >
       <div className="quick-view-container">
         <button className="quick-view-close" onClick={onClose}>
@@ -62,31 +196,22 @@ export default function QuickView({ product, onClose }) {
         </button>
         
         <div className="quick-view-content">
-          <div className="quick-view-images">
-            <div className="main-image">
-              <img 
-                src={currentImage || productData.images[0] || ''} 
-                alt={productData.name}
-                className="quick-view-main-img"
-              />
-            </div>
-            {productData.images.length > 1 && (
-              <div className="thumbnail-container">
-                {productData.images.map((img, index) => (
-                  <div 
-                    key={index}
-                    className={`thumbnail ${currentImage === img ? 'active' : ''}`}
-                    onClick={() => setCurrentImage(img)}
-                  >
-                    <img 
-                      src={img} 
-                      alt={`${productData.name} thumbnail ${index + 1}`}
-                      className="thumbnail-img"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+          <div className="quick-view-image-container">
+            <img 
+              src={productData.images[0] || ''} 
+              alt={productData.name}
+              style={{
+                width: '100%',
+                height: 'auto',
+                maxHeight: '400px',
+                objectFit: 'contain',
+                display: 'block',
+                margin: '0 auto',
+                borderRadius: '8px',
+                backgroundColor: '#f8f9fa',
+                padding: '20px'
+              }}
+            />
           </div>
           
           <div className="quick-view-details">
@@ -132,26 +257,43 @@ export default function QuickView({ product, onClose }) {
             
             <div className="quick-view-actions">
               <div className="quantity-selector">
-                <button className="quantity-btn" disabled={!productData.inStock}>-</button>
+                <button 
+                  className="quantity-btn" 
+                  onClick={() => handleQuantityChange(quantity - 1)}
+                  disabled={!productData.inStock || quantity <= 1}
+                >
+                  -
+                </button>
                 <input 
                   type="number" 
                   className="quantity-input" 
-                  defaultValue="1" 
+                  value={quantity}
                   min="1"
+                  onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
                   disabled={!productData.inStock}
                 />
-                <button className="quantity-btn" disabled={!productData.inStock}>+</button>
+                <button 
+                  className="quantity-btn" 
+                  onClick={() => handleQuantityChange(quantity + 1)}
+                  disabled={!productData.inStock}
+                >
+                  +
+                </button>
               </div>
               
               <div className="action-buttons">
                 <button 
                   className="btn btn-primary" 
-                  disabled={!productData.inStock}
+                  onClick={handleAddToCart}
+                  disabled={!productData.inStock || isAddingToCart}
                 >
-                  Add to Cart
+                  {isAddingToCart ? 'Adding...' : 'Add to Cart'}
                 </button>
-                <button className="btn btn-outline">
-                  Add to Wishlist
+                <button 
+                  className={`btn ${isWishlisted ? 'btn-wishlist-active' : 'btn-outline'}`}
+                  onClick={toggleWishlist}
+                >
+                  {isWishlisted ? 'In Wishlist' : 'Add to Wishlist'}
                 </button>
               </div>
             </div>
@@ -175,6 +317,10 @@ export default function QuickView({ product, onClose }) {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
-}
+};
+
+
+QuickView.displayName = 'QuickView';

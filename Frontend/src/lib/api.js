@@ -106,9 +106,34 @@ export const reviewsAPI = {
 
 // Wishlist API
 export const wishlistAPI = {
-  getWishlist: () => api.get('/wishlist'),
-  addToWishlist: (productId) => api.post('/wishlist', { productId }),
-  removeFromWishlist: (productId) => api.delete(`/wishlist/${productId}`),
+  // Get user's wishlist
+  getWishlist: () => api.get('wishlist'),
+  
+  // Add item to wishlist - accepts either product object or ID
+  addToWishlist: (product) => {
+    // If it's a full product object, extract the ID
+    if (product && typeof product === 'object' && product.id) {
+      // Remove 'prod_' prefix if it exists
+      const productId = String(product.id).replace('prod_', '');
+      return api.post('wishlist', { productId });
+    }
+    // If it's just an ID
+    const productId = String(product).replace('prod_', '');
+    return api.post('wishlist', { productId });
+  },
+  
+  // Remove item from wishlist by product ID
+  removeFromWishlist: (productId) => {
+    // Handle both object with id or direct id
+    const idToRemove = String(productId?.id || productId).replace('prod_', '');
+    return api.delete(`wishlist/${idToRemove}`);
+  },
+  
+  // Check if item is in wishlist
+  isInWishlist: (productId) => {
+    const idToCheck = String(productId?.id || productId).replace('prod_', '');
+    return api.get(`wishlist/check/${idToCheck}`);
+  }
 };
 
 export default api;
