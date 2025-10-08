@@ -1,6 +1,9 @@
 {
   "name": "backend",
   "version": "1.0.0",
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "main": "server.js",
   "type": "module",
   "scripts": {
@@ -19,9 +22,11 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
-    "stripe": "^19.0.0"
+    "stripe": "^19.0.0",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.0.0",
     "nodemon": "^3.1.10",
     "prisma": "^6.16.3"
   }

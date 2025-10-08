@@ -7,7 +7,6 @@ export default function Footer() {
     <footer className="footer">
       <div className="footer-container">
         <div className="footer-grid">
-        
           {/* About */}
           <div className="footer-section">
             <h3 className="footer-title">ShopHub</h3>
@@ -96,4 +95,3 @@ export default function Footer() {
     </footer>
   );
 }
-

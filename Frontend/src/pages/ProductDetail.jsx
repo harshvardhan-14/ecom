@@ -35,10 +35,19 @@ export default function ProductDetail() {
   
   const getImageUrl = (imagePath) => {
     if (!imagePath) return getDefaultProductImage();
-    if (typeof imagePath === 'string' && (imagePath.startsWith('http') || imagePath.startsWith('data:'))) {
-      return imagePath;
+    if (typeof imagePath === 'string') {
+      // If it's already a full URL or data URI, return as is
+      if (imagePath.startsWith('http') || imagePath.startsWith('data:') || imagePath.startsWith('blob:')) {
+        return imagePath;
+      }
+      // If it starts with a slash, it's a local path
+      if (imagePath.startsWith('/')) {
+        return imagePath;
+      }
+      // For relative paths, assume they're in the public folder
+      return `/${imagePath}`;
     }
-    return `${process.env.REACT_APP_API_URL || ''}/uploads/${imagePath}`;
+    return getDefaultProductImage();
   };
 
   useEffect(() => {
@@ -106,18 +115,9 @@ export default function ProductDetail() {
       return;
     }
     
-    try {
-      setIsAddingToCart(true);
-      // Remove 'prod_' prefix if it exists
-      const productId = product.id.replace('prod_', '');
-      
-      await addToCart(productId, quantity);
-      toast.success(`${product.name} added to cart`);
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      toast.error(error.response?.data?.message || 'Failed to add item to cart');
-    } finally {
-      setIsAddingToCart(false);
+    if (!product.inStock) {
+      toast.error('This product is currently out of stock');
+      return;
     }
     
     try {
@@ -135,7 +135,8 @@ export default function ProductDetail() {
       toast.success(`${product.name} added to cart`);
     } catch (error) {
       console.error('Error adding to cart:', error);
-      toast.error('Failed to add item to cart');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to add item to cart';
+      toast.error(errorMessage);
     } finally {
       setIsAddingToCart(false);
     }

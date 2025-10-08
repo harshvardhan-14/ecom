@@ -53,9 +53,12 @@ export const cartAPI = {
 
 // Orders API
 export const ordersAPI = {
+  create: (orderData) => api.post('/orders', orderData),
   createOrder: (orderData) => api.post('/orders', orderData),
   getOrders: (params) => api.get('/orders', { params }),
+  getAll: (params) => api.get('/orders', { params }),
   getOrderById: (id) => api.get(`/orders/${id}`),
+  getById: (id) => api.get(`/orders/${id}`),
   updateOrderStatus: (id, status) => api.put(`/orders/${id}/status`, { status }),
 };
 
@@ -107,32 +110,58 @@ export const reviewsAPI = {
 // Wishlist API
 export const wishlistAPI = {
   // Get user's wishlist
-  getWishlist: () => api.get('wishlist'),
+  getWishlist: () => api.get('/wishlist'),
   
   // Add item to wishlist - accepts either product object or ID
   addToWishlist: (product) => {
-    // If it's a full product object, extract the ID
-    if (product && typeof product === 'object' && product.id) {
-      // Remove 'prod_' prefix if it exists
-      const productId = String(product.id).replace('prod_', '');
-      return api.post('wishlist', { productId });
+    let productId;
+    
+    // Handle different input formats
+    if (product && typeof product === 'object') {
+      // If it has productId property (from store)
+      if (product.productId) {
+        productId = product.productId;
+      }
+      // If it has id property (from component)
+      else if (product.id) {
+        productId = product.id;
+      }
+      // Otherwise, try to stringify and see if it's an object
+      else {
+        console.error('Invalid product object:', product);
+        throw new Error('Product object must have id or productId property');
+      }
+    } else {
+      // It's a plain string ID
+      productId = product;
     }
-    // If it's just an ID
-    const productId = String(product).replace('prod_', '');
-    return api.post('wishlist', { productId });
+    
+    // Convert to string and trim whitespace (keep prod_ prefix!)
+    const cleanProductId = String(productId).trim();
+    
+    // Ensure we're sending the correct format expected by the backend
+    return api.post('/wishlist', { productId: cleanProductId });
   },
   
   // Remove item from wishlist by product ID
   removeFromWishlist: (productId) => {
     // Handle both object with id or direct id
-    const idToRemove = String(productId?.id || productId).replace('prod_', '');
-    return api.delete(`wishlist/${idToRemove}`);
+    let idToRemove = productId?.id || productId;
+    // Convert to string and trim whitespace (keep prod_ prefix!)
+    idToRemove = String(idToRemove).trim();
+    return api.delete(`/wishlist/${idToRemove}`);
   },
   
-  // Check if item is in wishlist
+  // Check if item is in wishlist (legacy alias)
   isInWishlist: (productId) => {
-    const idToCheck = String(productId?.id || productId).replace('prod_', '');
-    return api.get(`wishlist/check/${idToCheck}`);
+    const idToCheck = String(productId?.id || productId).trim();
+    return api.get(`/wishlist/check/${idToCheck}`);
+  },
+  
+  // Check wishlist status for a product
+  checkWishlistStatus: (productId) => {
+    const idToCheck = String(productId?.id || productId).trim();
+    return api.get(`/wishlist/check/${idToCheck}`);
   }
 };
 

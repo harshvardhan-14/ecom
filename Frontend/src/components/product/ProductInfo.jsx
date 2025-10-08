@@ -67,11 +67,14 @@ export default function ProductInfo({
       <div style={styles.buttonContainer}>
         <button
           onClick={onAddToCart}
-          disabled={isAddingToCart}
-          style={styles.addToCartButton}
+          disabled={isAddingToCart || !product?.inStock}
+          style={{
+            ...styles.addToCartButton,
+            ...(isAddingToCart || !product?.inStock ? styles.addToCartButtonDisabled : {})
+          }}
         >
           <ShoppingCart size={18} />
-          {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+          {isAddingToCart ? 'Adding...' : !product?.inStock ? 'Out of Stock' : 'Add to Cart'}
         </button>
         <button
           onClick={onToggleWishlist}
@@ -82,7 +85,7 @@ export default function ProductInfo({
             border: isWishlisted ? '1px solid #f5c6cb' : '1px solid #ddd',
           }}
         >
-          <Heart size={18} />
+          <Heart size={18} fill={isWishlisted ? '#721c24' : 'none'} />
           {isWishlisted ? 'Wishlisted' : 'Wishlist'}
         </button>
       </div>
@@ -206,6 +209,11 @@ const styles = {
       backgroundColor: '#bdc3c7',
       cursor: 'not-allowed',
     },
+  },
+  addToCartButtonDisabled: {
+    backgroundColor: '#bdc3c7',
+    cursor: 'not-allowed',
+    opacity: 0.6,
   },
   wishlistButton: {
     flex: 1,

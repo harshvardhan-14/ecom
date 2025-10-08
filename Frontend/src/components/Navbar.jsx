@@ -1,8 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, LogOut, Package, LayoutDashboard, Search, Moon, Sun } from 'lucide-react';
+import { ShoppingCart, User, LogOut, Package, LayoutDashboard, Search, Moon, Sun, Heart } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import useAuthStore from '../store/authStore';
 import useCartStore from '../store/cartStore';
+import useWishlistStore from '../store/wishlistStore';
 import { assets } from '../assets/assets';
 import '../styles/components/Navbar.css';
 
@@ -13,6 +14,7 @@ export default function Navbar() {
 
   const { user, isAuthenticated, logout, checkAuth } = useAuthStore();
   const { items, fetchCart } = useCartStore();
+  const { items: wishlistItems, fetchWishlist } = useWishlistStore();
 
   // Toggle dark mode
   const toggleDarkMode = () => {
@@ -26,32 +28,28 @@ export default function Navbar() {
     }
   };
 
-  // for default dark mode
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
     }
   }, []);
-  
-  // Check authentication status on mount
+
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
-  
-  // Fetch cart items when authenticated
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchCart().catch(() => {});
+      fetchWishlist().catch(() => {});
     }
-  }, [isAuthenticated, fetchCart]);
-
+  }, [isAuthenticated, fetchCart, fetchWishlist]);
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
-   
-  // Handle search input submission
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -107,10 +105,20 @@ export default function Navbar() {
 
           {/* Right Side Icons */}
           <div className="navbar-right">
+            {/* Wishlist */}
+            <Link to="/wishlist" className="wishlist-link">
+              <Heart className="wishlist-icon" />
+              {wishlistItems.length > 0 && (
+                <span className="wishlist-count">{wishlistItems.length}</span>
+              )}
+            </Link>
+
             {/* Cart */}
             <Link to="/cart" className="cart-link">
               <ShoppingCart className="cart-icon" />
-              <span className="cart-count">{cartItemCount}</span>
+              {cartItemCount > 0 && (
+                <span className="cart-count">{cartItemCount}</span>
+              )}
             </Link>
 
             {/* User Menu */}

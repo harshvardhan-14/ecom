@@ -25,6 +25,7 @@ const ProductCard = ({ product = {}, isAuthenticated = false }) => {
   const { isAuthenticated: authStatus } = useAuthStore();
   const { addToWishlist } = useWishlistStore();
 
+  // Handle add to cart functionality
   const handleAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -57,83 +58,64 @@ const ProductCard = ({ product = {}, isAuthenticated = false }) => {
     document.body.style.overflow = 'unset'; // Re-enable scrolling
   };
 
-  // Helper function to safely extract a value from an object or return a default
-  const safeGet = (obj, prop, defaultValue = '') => {
-    if (!obj) return defaultValue;
-    const value = obj[prop];
-    return value !== undefined && value !== null ? value : defaultValue;
-  };
+  // Safely get product data with defaults
+  const getProductData = () => {
+    // If product is not an object, return default values
+    if (!product || typeof product !== 'object') {
+      return {
+        id: `prod_${Math.random().toString(36).substr(2, 9)}`,
+        name: 'Unknown Product',
+        description: 'No description available',
+        price: 0,
+        mrp: 0,
+        rating: 0,
+        reviewCount: 0,
+        category: 'Uncategorized',
+        inStock: false,
+        images: [getDefaultImage()],
+        image: getDefaultImage()
+      };
+    }
 
-  const productData = {
-    // Basic info with fallbacks
-    id: (() => {
-      const id = safeGet(product, 'id') || safeGet(product, '_id');
-      if (!id) return `prod_${Math.random().toString(36).substr(2, 9)}`;
-      // Use the ID as is - the backend should handle the format
-      return id;
-    })(),
-    name: String(safeGet(product, 'name', 'Unknown Product')),
-    description: String(safeGet(product, 'description', 'No description available')),
-    
-    // Numeric values with type safety
-    price: Math.max(0, Number(safeGet(product, 'price', 0))),
-    mrp: Math.max(0, Number(safeGet(product, 'mrp', safeGet(product, 'price', 0)))),
-    rating: Math.min(5, Math.max(0, Number(safeGet(product, 'rating', 0)))),
-    reviewCount: Math.max(0, Number(safeGet(product, 'reviewCount', 0))),
-    
+    // Handle images - ensure we always have an array with at least one image
+    let images = [];
+    if (Array.isArray(product.images)) {
+      images = product.images.filter(img => img && typeof img === 'string');
+    } else if (product.image && typeof product.image === 'string') {
+      images = [product.image];
+    }
+    if (images.length === 0) {
+      images = [getDefaultImage(product.category)];
+    }
+
     // Handle category (could be string or object with name)
-    category: (() => {
-      const category = product?.category;
+    const getCategoryName = () => {
+      const category = product.category;
       if (!category) return 'Uncategorized';
-      // If it's a string, use it directly
       if (typeof category === 'string') return category;
-      // If it's an object with a name property, use that
       if (category && typeof category === 'object' && category.name) {
         return String(category.name);
       }
       return 'Uncategorized';
-    })(),
-    
-    // Handle stock status
-    inStock: product?.inStock !== false, // Default to true if not specified
-    
-    // Handle images - ensure we always have an array with at least one image
-    images: (() => {
-      // If we have an array of images, use it (filter out any invalid entries)
-      if (Array.isArray(product?.images)) {
-        return product.images.filter(img => img && typeof img === 'string');
-      }
-      // If we have a single image string, wrap it in an array
-      if (product?.image && typeof product.image === 'string') {
-        return [product.image];
-      }
-      // Fallback to default image
-      return [getDefaultImage(product?.category)];
-    })(),
-    
-    // Ensure we have a single image URL
-    image: (() => {
-      if (product?.image && typeof product.image === 'string') return product.image;
-      if (Array.isArray(product?.images) && product.images.length > 0) return product.images[0];
-      return getDefaultImage(product?.category);
-    })()
-  };
-  
-  const safeProductData = {};
-  Object.entries(productData).forEach(([key, value]) => {
-    if (value === null || value === undefined) {
-      safeProductData[key] = '';
-    } else if (Array.isArray(value)) {
-      // For arrays, we'll keep them as is for internal use
-      safeProductData[key] = value;
-    } else if (typeof value === 'object') {
-      // Convert objects to strings for rendering
-      safeProductData[key] = JSON.stringify(value);
-    } else {
-      safeProductData[key] = value;
-    }
-  });
+    };
 
+    return {
+      id: product.id || `prod_${Math.random().toString(36).substr(2, 9)}`,
+      name: String(product.name || 'Unknown Product'),
+      description: String(product.description || 'No description available'),
+      price: Math.max(0, Number(product.price || 0)),
+      mrp: Math.max(0, Number(product.mrp || product.price || 0)),
+      rating: Math.min(5, Math.max(0, Number(product.rating || 0))),
+      reviewCount: Math.max(0, Number(product.reviewCount || 0)),
+      category: getCategoryName(),
+      inStock: product.inStock !== false,
+      images: images,
+      image: images[0] // For backward compatibility
+    };
+  };
+
+  const productData = getProductData();
+  
   // Calculate product discount if MRP is greater than price
   const productDiscount = productData.mrp > productData.price
     ? Math.round(((productData.mrp - productData.price) / productData.mrp) * 100)
@@ -188,12 +170,12 @@ const ProductCard = ({ product = {}, isAuthenticated = false }) => {
       <Link to={`/products/${productData.id}`} className="product-link" onClick={(e) => e.stopPropagation()}>
         <div className="product-image-container">
           <img 
-            src={productData.image || 'https://via.placeholder.com/300x300?text=No+Image'}
+            src={productData.images?.[0] || productData.image || getDefaultImage(productData.category)}
             alt={productData.name} 
             className="product-image"
             onError={(e) => {
               e.target.onerror = null;
-              e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
+              e.target.src = getDefaultImage(productData.category);
             }}
             loading="lazy"
           />

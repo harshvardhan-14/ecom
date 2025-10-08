@@ -14,41 +14,79 @@ const productImages = [
   assets.product_img9, assets.product_img10, assets.product_img11, assets.product_img12,
 ];
 
+// Map category names to specific images
+const getCategoryImage = (name, index) => {
+  const imageMap = {
+    'Electronics': productImages[2],        // Smart Watch
+    'Fashion': productImages[4],            // Earbuds
+    'Home & Garden': productImages[0]       // Table Lamp
+  };
+  return imageMap[name] || productImages[index % productImages.length];
+};
+
 // Reformat category names from assets.js into the structure Home.jsx expects
 const DUMMY_CATEGORIES = DUMMY_CATEGORY_NAMES.map((name, index) => ({
     id: index + 1,
     name: name,
     slug: name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-'),
-    _count: { products: 10 + index * 5 }
+    _count: { products: 10 + index * 5 },
+    // Assign specific image based on category name
+    image: getCategoryImage(name, index)
 }));
 
 
-// Helper function to get default product image based on category
-const getDefaultProductImage = (category) => {
-  try {
-    const categoryName = (typeof category === 'object' ? category.name : category || '').toString().toLowerCase().trim();
-    
-    // Mapping categories to indices in the productImages array
-    const categoryImageMap = {
-      'headphones': [0],
-      'speakers': [1],
-      'watch': [8],
-      'earbuds': [9],
-      'mouse': [10],
-      'decoration': [11]
-    };
-    
-    const matchedCategory = Object.keys(categoryImageMap).find(key => 
-      categoryName.includes(key.toLowerCase())
-    );
-    
-    const imageIndices = matchedCategory ? categoryImageMap[matchedCategory] : [0];
-    const randomIndex = Math.floor(Math.random() * imageIndices.length);
-    
-    const selectedImage = productImages[imageIndices[randomIndex]]; 
-    
-    return selectedImage || assets.product_img1; 
+// Helper function to get category-specific image
+// Based on actual product images from seed.js:
+// img1,2 = Table Lamp (Home & Garden)
+// img3,4 = Smart Watch (Electronics) 
+// img5,6 = Wireless Earbuds (Electronics)
+// img7,8 = Yoga Mat (Sports)
+// img9,10 = Skincare Set (Beauty)
+// img11,12 = Books (Books)
+const getCategorySpecificImage = (categoryName, index = 0) => {
+  const name = (categoryName || '').toString().toLowerCase().trim();
   
+  // Direct mapping based on actual seed data
+  const categoryImageMap = {
+    // Backend categories (exact matches from seed.js)
+    'electronics': 2,           // product_img3 = Smart Watch
+    'fashion': 4,               // product_img5 = Earbuds (closest to fashion/accessories)
+    'home & garden': 0,         // product_img1 = Table Lamp
+    'home': 0,                  // product_img1 = Table Lamp
+    'garden': 0,                // product_img1 = Table Lamp
+    'beauty': 8,                // product_img9 = Skincare Set
+    'sports': 6,                // product_img7 = Yoga Mat
+    'books': 10,                // product_img11 = Books
+    // Frontend dummy categories
+    'headphones': 4,            // product_img5 = Earbuds
+    'speakers': 2,              // product_img3 = Smart Watch (tech)
+    'watch': 2,                 // product_img3 = Smart Watch
+    'earbuds': 4,               // product_img5 = Wireless Earbuds
+    'mouse': 2,                 // product_img3 = Smart Watch (tech)
+    'decoration': 0             // product_img1 = Table Lamp
+  };
+  
+  // Try exact match first
+  if (categoryImageMap[name] !== undefined) {
+    return productImages[categoryImageMap[name]];
+  }
+  
+  // Try partial match
+  for (const [key, imgIndex] of Object.entries(categoryImageMap)) {
+    if (name.includes(key) || key.includes(name)) {
+      return productImages[imgIndex];
+    }
+  }
+  
+  // Fallback to index-based
+  return productImages[index % productImages.length];
+};
+
+// Helper function for backward compatibility
+const getDefaultProductImage = (category, index = 0) => {
+  try {
+    const categoryName = typeof category === 'object' ? category.name : category;
+    return getCategorySpecificImage(categoryName, index);
   } catch (error) {
     console.error('Error getting product image:', error);
     return assets.product_img1;
@@ -107,7 +145,12 @@ export default function Home() {
             console.warn('Using dummy categories due to empty API response.');
             setCategories(DUMMY_CATEGORIES);
         } else {
-            setCategories(categoriesData);
+            // Add images to backend categories
+            const categoriesWithImages = categoriesData.map((cat, index) => ({
+                ...cat,
+                image: getCategorySpecificImage(cat.name, index)
+            }));
+            setCategories(categoriesWithImages);
         }
 
         setLoading(false);
@@ -206,7 +249,7 @@ export default function Home() {
         <div className="container">
           <h2 className="section-title">Shop by Category</h2>
           <div className="categories-grid">
-            {categories.map((category) => (
+            {categories.map((category, index) => (
               <Link
                 key={category.id}
                 to={`/products?category=${category.id}`}
@@ -214,7 +257,7 @@ export default function Home() {
               >
                 <div className="category-image-container">
                   <img
-                    src={category.image || getDefaultProductImage(category)}
+                    src={category.image || getCategorySpecificImage(category.name, index)}
                     alt={category.name}
                     className="category-image"
                     onError={(e) => {

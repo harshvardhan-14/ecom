@@ -5,7 +5,32 @@ import useWishlistStore from '../store/wishlistStore';
 import useAuthStore from '../store/authStore';
 import useCartStore from '../store/cartStore';
 import { toast } from 'react-hot-toast';
+import { assets } from '../assets/assets';
 import '../styles/pages/Wishlist.css';
+
+// Helper function to get product image
+const getProductImage = (images) => {
+  if (!images || images.length === 0) return assets.product_img1;
+  
+  const imagePath = Array.isArray(images) ? images[0] : images;
+  // Convert database path to imported image
+  const imageMap = {
+    '/product_img1.png': assets.product_img1,
+    '/product_img2.png': assets.product_img2,
+    '/product_img3.png': assets.product_img3,
+    '/product_img4.png': assets.product_img4,
+    '/product_img5.png': assets.product_img5,
+    '/product_img6.png': assets.product_img6,
+    '/product_img7.png': assets.product_img7,
+    '/product_img8.png': assets.product_img8,
+    '/product_img9.png': assets.product_img9,
+    '/product_img10.png': assets.product_img10,
+    '/product_img11.png': assets.product_img11,
+    '/product_img12.png': assets.product_img12,
+  };
+  
+  return imageMap[imagePath] || assets.product_img1;
+};
 
 export default function Wishlist() {
   const navigate = useNavigate();
@@ -82,7 +107,7 @@ export default function Wishlist() {
                 </button>
                 <div className="wishlist-item-image">
                   <img 
-                    src={product.image || '/placeholder-product.jpg'} 
+                    src={getProductImage(product.images || product.image)} 
                     alt={product.name} 
                     onClick={() => navigate(`/products/${product.id}`)}
                   />

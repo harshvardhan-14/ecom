@@ -9,7 +9,7 @@ const useCartStore = create((set, get) => ({
   fetchCart: async () => {
     try {
       set({ isLoading: true });
-      const { data } = await cartAPI.get();
+      const { data } = await cartAPI.getCart();
       set({ items: data.items, total: data.total, isLoading: false });
     } catch (error) {
       set({ isLoading: false });
@@ -17,9 +17,13 @@ const useCartStore = create((set, get) => ({
     }
   },
 
-  addToCart: async (productId, quantity = 1) => {
+addToCart: async (product, quantity = 1) => {
     try {
-      await cartAPI.add({ productId, quantity });
+      // Handle both product object and product ID
+      const productId = typeof product === 'object' ? product.id : product;
+      const qty = typeof product === 'object' && product.quantity ? product.quantity : quantity;
+      
+      await cartAPI.addToCart(productId, qty);
       await get().fetchCart();
     } catch (error) {
       throw error;
@@ -28,7 +32,7 @@ const useCartStore = create((set, get) => ({
 
   updateQuantity: async (itemId, quantity) => {
     try {
-      await cartAPI.update(itemId, { quantity });
+      await cartAPI.updateCartItem(itemId, quantity);
       await get().fetchCart();
     } catch (error) {
       throw error;
@@ -37,7 +41,7 @@ const useCartStore = create((set, get) => ({
 
   removeItem: async (itemId) => {
     try {
-      await cartAPI.remove(itemId);
+      await cartAPI.removeFromCart(itemId);
       await get().fetchCart();
     } catch (error) {
       throw error;
@@ -46,7 +50,7 @@ const useCartStore = create((set, get) => ({
 
   clearCart: async () => {
     try {
-      await cartAPI.clear();
+      await cartAPI.clearCart();
       set({ items: [], total: 0 });
     } catch (error) {
       throw error;

@@ -2,11 +2,11 @@ import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
-import dummyData from '../assets/dummyData';
+import useAuthStore from '../store/authStore';
+import { dummyData } from '../assets/dummyData';
 const ALL_CATEGORIES = dummyData.categories || [];
 import toast from 'react-hot-toast';
 import '../../src/styles/pages/Products.css';
-
 
 // Mock API services
 const ProductService = {
@@ -41,12 +41,9 @@ const ProductService = {
         
         // Apply category filter
         if (categoryId) {
-          const category = ALL_CATEGORIES.find(c => c.id === categoryId);
-          if (category) {
-            filteredProducts = filteredProducts.filter(p => 
-              p.categoryId === category.id
-            );
-          }
+          filteredProducts = filteredProducts.filter(p => 
+            p.categoryId === categoryId
+          );
         }
         
         // Pagination
@@ -88,6 +85,9 @@ export default function Products() {
   // Form state
   const [searchInput, setSearchInput] = useState(searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || ''); 
+
+  // Auth state
+  const { isAuthenticated } = useAuthStore();
 
   // Fetch categories on component mount
   useEffect(() => {
@@ -262,7 +262,8 @@ useEffect(() => {
                   inStock: product.inStock !== undefined ? product.inStock : true,
                   rating: product.rating || 0,
                   reviewCount: product.reviewCount || 0
-                }} 
+                }}
+                isAuthenticated={isAuthenticated}
               />
             ))
           )}
@@ -323,4 +324,5 @@ useEffect(() => {
         )}
       </div>
     </div>
-  ); }
+  );
+}

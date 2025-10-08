@@ -85,6 +85,11 @@ export default function QuickView({ product, onClose }) {
       return;
     }
     
+    if (!product.inStock) {
+      toast.error('This product is currently out of stock');
+      return;
+    }
+    
     try {
       setIsAddingToCart(true);
       
@@ -100,7 +105,8 @@ export default function QuickView({ product, onClose }) {
       toast.success(`${product.name} added to cart`);
     } catch (error) {
       console.error('Error adding to cart:', error);
-      toast.error('Failed to add item to cart');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to add item to cart';
+      toast.error(errorMessage);
     } finally {
       setIsAddingToCart(false);
     }
@@ -200,17 +206,7 @@ export default function QuickView({ product, onClose }) {
             <img 
               src={productData.images[0] || ''} 
               alt={productData.name}
-              style={{
-                width: '100%',
-                height: 'auto',
-                maxHeight: '400px',
-                objectFit: 'contain',
-                display: 'block',
-                margin: '0 auto',
-                borderRadius: '8px',
-                backgroundColor: '#f8f9fa',
-                padding: '20px'
-              }}
+              className="quick-view-main-img"
             />
           </div>
           
@@ -322,5 +318,5 @@ export default function QuickView({ product, onClose }) {
   );
 };
 
-
+// Add display name for better debugging
 QuickView.displayName = 'QuickView';
