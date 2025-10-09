@@ -7,7 +7,7 @@ import { productsAPI, categoriesAPI } from '../../lib/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import AdminLayout from '../../components/AdminLayout';
-//import '../../styles/pages/Admin.css';
+import '../../styles/pages/AdminProducts.css';
 
 // Helper function to get product image
 const getProductImage = (images) => {

@@ -5,7 +5,7 @@ import useCartStore from '../store/cartStore';
 import { addressesAPI, ordersAPI } from '../lib/api';
 import { formatPrice } from '../lib/utils';
 import { assets } from '../assets/assets';
-//import '../../src/styles/pages/Checkout.css';
+import '../../src/styles/pages/Checkout.css';
 import toast from 'react-hot-toast';
 
 // Helper function to get product image

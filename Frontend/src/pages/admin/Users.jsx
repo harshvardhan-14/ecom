@@ -3,13 +3,12 @@ import { Search, Users as UsersIcon, Shield, User } from 'lucide-react';
 import { adminAPI } from '../../lib/api';
 import toast from 'react-hot-toast';
 import AdminLayout from '../../components/AdminLayout';
-//import '../../styles/pages/Admin.css';
+import '../../styles/pages/AdminUsers.css';
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
 
   useEffect(() => {
     fetchUsers();

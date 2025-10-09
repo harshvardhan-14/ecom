@@ -1,0 +1,7 @@
+@import './AdminDashboard.css';
+
+/* Admin Users overrides */
+.stats-grid { margin-bottom: var(--spacing-6); }
+.status-badge { padding:.25rem .5rem; border-radius: var(--radius-md); font-size: var(--font-size-xs); font-weight: var(--font-weight-medium); }
+.status-badge.delivered { background:#d1fae5; color:#065f46; }
+.status-badge.processing { background:#e0e7ff; color:#3730a3; }

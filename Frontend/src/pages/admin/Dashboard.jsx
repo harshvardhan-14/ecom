@@ -5,7 +5,7 @@ import { ordersAPI, productsAPI } from '../../lib/api';
 import { formatPrice } from '../../lib/utils';
 import toast from 'react-hot-toast';
 import AdminLayout from '../../components/AdminLayout';
-//import '../../styles/pages/Admin.css';
+import '../../styles/pages/AdminDashboard.css';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({

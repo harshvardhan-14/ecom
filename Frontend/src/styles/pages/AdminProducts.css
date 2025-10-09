@@ -1,0 +1,17 @@
+@import './AdminDashboard.css';
+
+/* Admin Products overrides */
+.products-header { display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--spacing-6); }
+.add-product-btn { display:inline-flex; gap:.5rem; align-items:center; padding:.55rem .9rem; border:1px solid var(--primary-600); background: var(--primary-600); color:#fff; border-radius: var(--radius-md); }
+.products-grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: var(--spacing-6); }
+.product-admin-card { background: var(--bg-primary); border:1px solid var(--border-primary); border-radius: var(--radius-lg); padding: var(--spacing-4); box-shadow: var(--shadow-xs); display:flex; flex-direction:column; gap:var(--spacing-3); }
+.product-admin-thumb { width:100%; aspect-ratio:1/1; object-fit:cover; border-radius: var(--radius-md); background: var(--neutral-100); }
+.product-admin-actions { display:flex; gap:.5rem; margin-top:auto; }
+.product-admin-btn { flex:1; font-size: var(--font-size-sm); padding:.4rem .6rem; border:1px solid var(--border-primary); background:#fff; border-radius: var(--radius-md); cursor:pointer; }
+.product-admin-btn.edit { border-color:#4f46e5; color:#4f46e5; }
+.product-admin-btn.delete { border-color:#dc2626; color:#dc2626; }
+
+/* Form modal */
+.product-form-modal { position:fixed; inset:0; background:rgba(0,0,0,.5); display:grid; place-items:center; z-index:100; }
+.product-form { width:min(680px,96vw); background: var(--bg-primary); border:1px solid var(--border-primary); border-radius: var(--radius-lg); padding: var(--spacing-6); box-shadow: var(--shadow-lg); max-height:90vh; overflow-y:auto; display:grid; gap: var(--spacing-4); }
+.input { width:100%; padding:.55rem .75rem; border:1px solid var(--border-primary); border-radius: var(--radius-md); }

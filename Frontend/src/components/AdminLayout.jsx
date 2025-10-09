@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import useAuthStore from '../store/authStore';
-//import '../styles/components/AdminLayout.css';
+import '../styles/components/AdminLayout.css';
 
 export default function AdminLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);

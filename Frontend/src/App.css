@@ -1,48 +1,34 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: var(--spacing-8);
-  text-align: center;
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-color);
+  color: var(--text-color);
 }
 
-.logo {
-  height: 6em;
-  padding: var(--spacing-6);
-  will-change: filter;
-  transition: filter var(--transition-normal) ease;
+.main-content {
+  flex-grow: 1;
+  padding: 1rem 0;
 }
 
-.logo:hover {
-  filter: drop-shadow(0 0 2em var(--primary-300));
-}
-
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em var(--primary-200));
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
+/* Responsive adjustments */
+@media (min-width: 768px) {
+  .main-content {
+    padding: 2rem 0;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Dark mode support */
+.dark .app-container {
+  background-color: #111827;
+  color: #f9fafb;
 }
 
-.card {
-  padding: var(--spacing-8);
-  background-color: var(--bg-primary);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+.dark .main-content {
+  background-color: #111827;
 }
 
-.read-the-docs {
-  color: var(--text-tertiary);
-  font-size: var(--font-size-sm);
+.dark body {
+  background-color: #111827;
+  color: #f9fafb;
 }

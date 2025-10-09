@@ -16,7 +16,7 @@ import product_img9 from "./product_img9.png";
 import product_img10 from "./product_img10.png";
 import product_img11 from "./product_img11.png";
 import product_img12 from "./product_img12.png";
-import { Clock, Headset, Send } from "lucide-react";
+import { Clock, Headphones, Send } from "lucide-react";
 import profile_pic1 from "./profile_pic1.jpg";
 import profile_pic2 from "./profile_pic2.jpg";
 import profile_pic3 from "./profile_pic3.jpg";
@@ -42,13 +42,45 @@ export const assets = {
 };
 
 export const categories = [
-  "Headphones",
-  "Speakers",
-  "Watch",
-  "Earbuds",
-  "Mouse",
-  "Decoration"
+  "Electronics",
+  "Fashion",
+  "Home & Garden"
 ];
+
+/**
+ * Get default product image based on category
+ * @param {string} categoryName - The category name
+ * @returns {string} - Default image URL or placeholder
+ */
+export const getDefaultProductImage = (categoryName) => {
+  // You can replace these with actual default images or a placeholder service
+  const defaultImages = {
+    'Electronics': 'https://via.placeholder.com/300x300/4F46E5/FFFFFF?text=Electronics',
+    'Clothing': 'https://via.placeholder.com/300x300/E11D48/FFFFFF?text=Clothing',
+    'Home': 'https://via.placeholder.com/300x300/059669/FFFFFF?text=Home',
+    'Books': 'https://via.placeholder.com/300x300/7C3AED/FFFFFF?text=Books',
+    'Sports': 'https://via.placeholder.com/300x300/DC2626/FFFFFF?text=Sports',
+    'Beauty': 'https://via.placeholder.com/300x300/EC4899/FFFFFF?text=Beauty',
+    'default': 'https://via.placeholder.com/300x300/6B7280/FFFFFF?text=Product'
+  };
+
+  if (categoryName && defaultImages[categoryName]) {
+    return defaultImages[categoryName];
+  }
+
+  return defaultImages.default;
+};
+
+/**
+ * Get placeholder image for any size
+ * @param {number} width - Image width
+ * @param {number} height - Image height
+ * @param {string} text - Text to display
+ * @returns {string} - Placeholder image URL
+ */
+export const getPlaceholderImage = (width = 300, height = 300, text = 'Image') => {
+  return `https://via.placeholder.com/${width}x${height}/6B7280/FFFFFF?text=${encodeURIComponent(text)}`;
+};
 
 export const dummyRatingsData = [
   {
@@ -121,7 +153,7 @@ export const ourSpecsData = [
   { 
     title: "24/7 Customer Support", 
     description: "We're here for you. Get expert help with our customer support.", 
-    icon: Headset, 
+    icon: Headphones, 
     accent: '#A684FF' 
   }
 ];

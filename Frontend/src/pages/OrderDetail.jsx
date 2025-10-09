@@ -4,7 +4,7 @@ import { ArrowLeft, Package, CheckCircle, Clock, Truck, XCircle } from 'lucide-r
 
 import { ordersAPI } from '../lib/api';
 import { formatPrice, formatDate, getStatusColor } from '../lib/utils';
-//import { getDefaultProductImage } from '../assets/assets';
+import { getDefaultProductImage } from '../assets/assets';
 import toast from 'react-hot-toast';
 
 export default function OrderDetail() {

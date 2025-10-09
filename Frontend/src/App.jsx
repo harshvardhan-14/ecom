@@ -17,7 +17,8 @@ import AdminDashboard from './pages/admin/Dashboard';
 import AdminProducts from './pages/admin/Products';
 import AdminOrders from './pages/admin/Orders';
 import AdminUsers from './pages/admin/Users';
-
+import Payment from './pages/Payment';
+import PaymentSuccess from './pages/PaymentSuccess';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 
@@ -66,7 +67,17 @@ function App() {
               </ProtectedRoute>
             } />
             
-           
+            {/* Payment Routes */}
+            <Route path="/payment" element={
+              <ProtectedRoute>
+                <Payment />
+              </ProtectedRoute>
+            } />
+            <Route path="/payment/success" element={
+              <ProtectedRoute>
+                <PaymentSuccess />
+              </ProtectedRoute>
+            } />
             
             {/* Admin Routes */}
             <Route path="/admin" element={
@@ -132,7 +143,19 @@ function App() {
               </div>
             } />
             
-           
+            {/* 404 Page */}
+            <Route path="*" element={
+              <div className="not-found">
+                <div className="not-found-content">
+                  <h1 className="not-found-title">404</h1>
+                  <h2 className="not-found-subtitle">Page Not Found</h2>
+                  <p className="not-found-text">The page you are looking for doesn't exist or has been moved.</p>
+                  <Link to="/" className="btn btn-primary">
+                    Go Back Home
+                  </Link>
+                </div>
+              </div>
+            } />
           </Routes>
         </main>
         <Footer />

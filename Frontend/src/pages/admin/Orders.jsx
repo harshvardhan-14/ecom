@@ -4,13 +4,12 @@ import { ordersAPI } from '../../lib/api';
 import { formatPrice, formatDate, getStatusColor } from '../../lib/utils';
 import toast from 'react-hot-toast';
 import AdminLayout from '../../components/AdminLayout';
-//import '../../styles/pages/Admin.css';
+import '../../styles/pages/AdminOrders.css';
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
-  const [search, setSearch] = useState('');
 
   useEffect(() => {
     fetchOrders();
