@@ -88,6 +88,7 @@ const seedDatabase = async () => {
   console.log(`🏷️  Created ${createdCategories.length} categories`);
 
   // Create products that match frontend structure
+  // Using placeholder images that will work
   const products = [
     {
       id: 'prod_1',
@@ -95,7 +96,7 @@ const seedDatabase = async () => {
       description: 'Sleek and modern table lamp with adjustable brightness and color temperature. Perfect for any room in your home.',
       price: 89.99,
       categoryId: 'cat3', // Home & Garden
-      images: ['/product_img1.png', '/product_img2.png'],
+      images: ['https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=400', 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=400'],
       stock: 100,
       featured: true
     },
@@ -105,7 +106,7 @@ const seedDatabase = async () => {
       description: 'Advanced smartwatch with health monitoring, GPS, and 7-day battery life. Stay connected and track your fitness goals in style.',
       price: 249.99,
       categoryId: 'cat1', // Electronics
-      images: ['/product_img3.png', '/product_img4.png'],
+      images: ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400', 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=400'],
       stock: 100,
       featured: true
     },
@@ -115,7 +116,7 @@ const seedDatabase = async () => {
       description: 'High-quality wireless earbuds with active noise cancellation and crystal clear sound quality.',
       price: 149.99,
       categoryId: 'cat1', // Electronics
-      images: ['/product_img5.png', '/product_img6.png'],
+      images: ['https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400', 'https://images.unsplash.com/photo-1606841837239-c5a1a4a07af7?w=400'],
       stock: 100,
       featured: true
     },
@@ -125,7 +126,7 @@ const seedDatabase = async () => {
       description: 'Digital smart pencil with pressure sensitivity and tilt recognition. Perfect for artists and designers.',
       price: 129.99,
       categoryId: 'cat1', // Electronics
-      images: ['/product_img7.png', '/product_img8.png'],
+      images: ['https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400', 'https://images.unsplash.com/photo-1625948515291-69613efd103f?w=400'],
       stock: 100,
       featured: true
     },
@@ -135,7 +136,7 @@ const seedDatabase = async () => {
       description: 'Portable Bluetooth speaker with 360-degree sound and 12-hour battery life. Waterproof and durable.',
       price: 79.99,
       categoryId: 'cat1', // Electronics
-      images: ['/product_img9.png', '/product_img10.png'],
+      images: ['https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400', 'https://images.unsplash.com/photo-1545454675-3531b543be5d?w=400'],
       stock: 100,
       featured: false
     },
@@ -145,7 +146,7 @@ const seedDatabase = async () => {
       description: 'Ergonomic wireless mouse with precision tracking and long battery life. Perfect for work and gaming.',
       price: 39.99,
       categoryId: 'cat1', // Electronics
-      images: ['/product_img11.png', '/product_img12.png'],
+      images: ['https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400', 'https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=400'],
       stock: 100,
       featured: false
     },
@@ -155,7 +156,7 @@ const seedDatabase = async () => {
       description: 'Stylish designer sunglasses with UV protection. Perfect for any occasion.',
       price: 159.99,
       categoryId: 'cat2', // Fashion
-      images: ['/product_img2.png', '/product_img3.png'],
+      images: ['https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400', 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400'],
       stock: 100,
       featured: true
     },
@@ -165,7 +166,7 @@ const seedDatabase = async () => {
       description: 'Premium leather wallet with multiple card slots and RFID protection.',
       price: 49.99,
       categoryId: 'cat2', // Fashion
-      images: ['/product_img4.png', '/product_img5.png'],
+      images: ['https://images.unsplash.com/photo-1627123424574-724758594e93?w=400', 'https://images.unsplash.com/photo-1591561954557-26941169b49e?w=400'],
       stock: 100,
       featured: false
     },
@@ -175,7 +176,7 @@ const seedDatabase = async () => {
       description: 'Elegant ceramic vase perfect for home decoration. Modern minimalist design.',
       price: 34.99,
       categoryId: 'cat3', // Home & Garden
-      images: ['/product_img6.png', '/product_img7.png'],
+      images: ['https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=400', 'https://images.unsplash.com/photo-1581783898377-1c85bf937427?w=400'],
       stock: 100,
       featured: false
     },
@@ -185,7 +186,7 @@ const seedDatabase = async () => {
       description: 'Modern wall clock with silent movement. Perfect for any room.',
       price: 29.99,
       categoryId: 'cat3', // Home & Garden
-      images: ['/product_img8.png', '/product_img9.png'],
+      images: ['https://images.unsplash.com/photo-1563861826100-9cb868fdbe1c?w=400', 'https://images.unsplash.com/photo-1509048191080-d2984bad6ae5?w=400'],
       stock: 100,
       featured: false
     },

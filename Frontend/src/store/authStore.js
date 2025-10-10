@@ -43,9 +43,10 @@ const useAuthStore = create((set) => ({
 
     try {
       set({ isLoading: true });
-      const { data } = await authAPI.getMe();
+      const { data } = await authAPI.getProfile();
       set({ user: data, isAuthenticated: true, isLoading: false });
     } catch (error) {
+      console.error('Auth check failed:', error);
       localStorage.removeItem('token');
       set({ user: null, token: null, isAuthenticated: false, isLoading: false });
     }

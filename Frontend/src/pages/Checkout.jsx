@@ -13,6 +13,12 @@ const getProductImage = (images) => {
   if (!images || images.length === 0) return assets.product_img1;
   
   const imagePath = Array.isArray(images) ? images[0] : images;
+  
+  // If it's already a full URL (http/https), return it directly
+  if (typeof imagePath === 'string' && (imagePath.startsWith('http://') || imagePath.startsWith('https://'))) {
+    return imagePath;
+  }
+  
   // Convert database path to imported image
   const imageMap = {
     '/product_img1.png': assets.product_img1,

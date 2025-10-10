@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState , React} from 'react';
 import { Link } from 'react-router-dom';
 import { Package, ChevronRight } from 'lucide-react';
 import { ordersAPI } from '../lib/api';
@@ -6,6 +6,20 @@ import { formatPrice, formatDate, getStatusColor } from '../lib/utils';
 import { getDefaultProductImage } from '../assets/assets';
 import toast from 'react-hot-toast';
 import '../styles/pages/Orders.css';
+
+// Helper function to get product image
+const getProductImage = (images) => {
+  if (!images || images.length === 0) return getDefaultProductImage();
+  
+  const imagePath = Array.isArray(images) ? images[0] : images;
+  
+  // If it's already a full URL (http/https), return it directly
+  if (typeof imagePath === 'string' && (imagePath.startsWith('http://') || imagePath.startsWith('https://'))) {
+    return imagePath;
+  }
+  
+  return getDefaultProductImage();
+};
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);
@@ -75,7 +89,7 @@ export default function Orders() {
                 {order.orderItems.slice(0, 3).map((item, index) => (
                   <img
                     key={index}
-                    src={item.product.images[0] || getDefaultProductImage(item.product.category?.name)}
+                    src={getProductImage(item.product.images)}
                     alt={item.product.name}
                     className="order-item-image"
                   />

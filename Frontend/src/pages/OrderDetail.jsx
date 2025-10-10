@@ -1,11 +1,25 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Package, CheckCircle, Clock, Truck, XCircle } from 'lucide-react';
 
 import { ordersAPI } from '../lib/api';
 import { formatPrice, formatDate, getStatusColor } from '../lib/utils';
 import { getDefaultProductImage } from '../assets/assets';
 import toast from 'react-hot-toast';
+
+// Helper function to get product image
+const getProductImage = (images) => {
+  if (!images || images.length === 0) return getDefaultProductImage();
+  
+  const imagePath = Array.isArray(images) ? images[0] : images;
+  
+  // If it's already a full URL (http/https), return it directly
+  if (typeof imagePath === 'string' && (imagePath.startsWith('http://') || imagePath.startsWith('https://'))) {
+    return imagePath;
+  }
+  
+  return getDefaultProductImage();
+};
 
 export default function OrderDetail() {
   const { id } = useParams();
@@ -68,7 +82,7 @@ export default function OrderDetail() {
               {order.orderItems.map((item) => (
                 <div key={item.id} className="flex items-center space-x-4 pb-4 border-b last:border-b-0">
                   <img
-                    src={item.product.images[0] || getDefaultProductImage(item.product.category?.name)}
+                    src={getProductImage(item.product.images)}
                     alt={item.product.name}
                     className="w-20 h-20 object-cover rounded-lg"
                   />

@@ -82,17 +82,23 @@ router.post('/', authenticate, async (req, res) => {
   }
 });
 
-// Update cart item quantity
-router.put('/:id', authenticate, async (req, res) => {
+// Update cart item quantity by product ID
+router.put('/:productId', authenticate, async (req, res) => {
   try {
     const { quantity } = req.body;
+    const { productId } = req.params;
 
     const cartItem = await prisma.cartItem.findUnique({
-      where: { id: req.params.id },
+      where: {
+        userId_productId: {
+          userId: req.user.id,
+          productId,
+        },
+      },
       include: { product: true },
     });
 
-    if (!cartItem || cartItem.userId !== req.user.id) {
+    if (!cartItem) {
       return res.status(404).json({ error: 'Cart item not found' });
     }
 
@@ -101,34 +107,53 @@ router.put('/:id', authenticate, async (req, res) => {
     }
 
     const updatedItem = await prisma.cartItem.update({
-      where: { id: req.params.id },
+      where: {
+        userId_productId: {
+          userId: req.user.id,
+          productId,
+        },
+      },
       data: { quantity },
       include: { product: true },
     });
 
     res.json(updatedItem);
   } catch (error) {
+    console.error('Error updating cart item:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Remove item from cart
-router.delete('/:id', authenticate, async (req, res) => {
+// Remove item from cart by product ID
+router.delete('/:productId', authenticate, async (req, res) => {
   try {
+    const { productId } = req.params;
+
     const cartItem = await prisma.cartItem.findUnique({
-      where: { id: req.params.id },
+      where: {
+        userId_productId: {
+          userId: req.user.id,
+          productId,
+        },
+      },
     });
 
-    if (!cartItem || cartItem.userId !== req.user.id) {
+    if (!cartItem) {
       return res.status(404).json({ error: 'Cart item not found' });
     }
 
     await prisma.cartItem.delete({
-      where: { id: req.params.id },
+      where: {
+        userId_productId: {
+          userId: req.user.id,
+          productId,
+        },
+      },
     });
 
     res.json({ message: 'Item removed from cart' });
   } catch (error) {
+    console.error('Error removing cart item:', error);
     res.status(500).json({ error: error.message });
   }
 });

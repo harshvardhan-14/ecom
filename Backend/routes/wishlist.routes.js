@@ -5,48 +5,46 @@ import { authenticate } from '../middleware/auth.middleware.js';
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// Get reviews for a product
-router.get('/product/:productId', async (req, res) => {
+// Get user's wishlist
+router.get('/', authenticate, async (req, res) => {
   try {
-    const reviews = await prisma.review.findMany({
-      where: { productId: req.params.productId },
+    const wishlistItems = await prisma.wishlist.findMany({
+      where: { userId: req.user.id },
       include: {
-        user: {
-          select: { firstName: true, lastName: true },
+        product: {
+          include: { category: true },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { addedAt: 'desc' },
     });
-    res.json(reviews);
+
+    res.json(wishlistItems);
   } catch (error) {
+    console.error('Error fetching wishlist:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Create review
+// Add item to wishlist
 router.post('/', authenticate, async (req, res) => {
   try {
-    const { productId, rating, comment } = req.body;
+    const { productId } = req.body;
 
-    // Check if user has purchased the product
-    const order = await prisma.order.findFirst({
-      where: {
-        userId: req.user.id,
-        status: 'DELIVERED',
-        orderItems: {
-          some: { productId },
-        },
-      },
-    });
-
-    if (!order) {
-      return res.status(400).json({
-        error: 'You can only review products you have purchased',
-      });
+    if (!productId) {
+      return res.status(400).json({ error: 'Product ID is required' });
     }
 
-    // Check if user already reviewed this product
-    const existingReview = await prisma.review.findUnique({
+    // Check if product exists
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Check if item already in wishlist
+    const existingItem = await prisma.wishlist.findUnique({
       where: {
         userId_productId: {
           userId: req.user.id,
@@ -55,76 +53,95 @@ router.post('/', authenticate, async (req, res) => {
       },
     });
 
-    if (existingReview) {
-      return res.status(400).json({ error: 'You have already reviewed this product' });
+    if (existingItem) {
+      return res.status(400).json({ error: 'Product already in wishlist' });
     }
 
-    const review = await prisma.review.create({
+    // Add to wishlist
+    const wishlistItem = await prisma.wishlist.create({
       data: {
         userId: req.user.id,
         productId,
-        rating: parseInt(rating),
-        comment,
       },
       include: {
-        user: {
-          select: { firstName: true, lastName: true },
+        product: {
+          include: { category: true },
         },
       },
     });
 
-    res.status(201).json(review);
+    res.status(201).json(wishlistItem);
   } catch (error) {
+    console.error('Error adding to wishlist:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Update review
-router.put('/:id', authenticate, async (req, res) => {
+// Check if product is in wishlist
+router.get('/check/:productId', authenticate, async (req, res) => {
   try {
-    const { rating, comment } = req.body;
+    const { productId } = req.params;
 
-    const existingReview = await prisma.review.findUnique({
-      where: { id: req.params.id },
-    });
-
-    if (!existingReview || existingReview.userId !== req.user.id) {
-      return res.status(404).json({ error: 'Review not found' });
-    }
-
-    const review = await prisma.review.update({
-      where: { id: req.params.id },
-      data: { rating: parseInt(rating), comment },
-      include: {
-        user: {
-          select: { firstName: true, lastName: true },
+    const wishlistItem = await prisma.wishlist.findUnique({
+      where: {
+        userId_productId: {
+          userId: req.user.id,
+          productId,
         },
       },
     });
 
-    res.json(review);
+    res.json({ inWishlist: !!wishlistItem });
   } catch (error) {
+    console.error('Error checking wishlist:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Delete review
-router.delete('/:id', authenticate, async (req, res) => {
+// Remove item from wishlist
+router.delete('/:productId', authenticate, async (req, res) => {
   try {
-    const review = await prisma.review.findUnique({
-      where: { id: req.params.id },
+    const { productId } = req.params;
+
+    const wishlistItem = await prisma.wishlist.findUnique({
+      where: {
+        userId_productId: {
+          userId: req.user.id,
+          productId,
+        },
+      },
     });
 
-    if (!review || review.userId !== req.user.id) {
-      return res.status(404).json({ error: 'Review not found' });
+    if (!wishlistItem) {
+      return res.status(404).json({ error: 'Item not found in wishlist' });
     }
 
-    await prisma.review.delete({
-      where: { id: req.params.id },
+    await prisma.wishlist.delete({
+      where: {
+        userId_productId: {
+          userId: req.user.id,
+          productId,
+        },
+      },
     });
 
-    res.json({ message: 'Review deleted successfully' });
+    res.json({ message: 'Item removed from wishlist' });
   } catch (error) {
+    console.error('Error removing from wishlist:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Clear wishlist
+router.delete('/', authenticate, async (req, res) => {
+  try {
+    await prisma.wishlist.deleteMany({
+      where: { userId: req.user.id },
+    });
+
+    res.json({ message: 'Wishlist cleared' });
+  } catch (error) {
+    console.error('Error clearing wishlist:', error);
     res.status(500).json({ error: error.message });
   }
 });

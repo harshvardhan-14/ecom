@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
 import { User, MapPin, Plus, Trash2 } from 'lucide-react';
 import useAuthStore from '../store/authStore';
-import { addressesAPI } from '../lib/api';
+import useWishlistStore from '../store/wishlistStore';
+import { addressesAPI, ordersAPI } from '../lib/api';
 import { toast } from 'react-hot-toast';
-import '../../src/styles/pages/Profile.css';
+import '../styles/pages/Profile.css';
 
 const Profile = () => {
   const { user } = useAuthStore();
+  const { items: wishlistItems, fetchWishlist } = useWishlistStore();
   const [addresses, setAddresses] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [newAddress, setNewAddress] = useState({
@@ -23,7 +26,9 @@ const Profile = () => {
 
   useEffect(() => {
     fetchAddresses();
-  }, []);
+    fetchOrders();
+    fetchWishlist();
+  }, [fetchWishlist]);
 
   const fetchAddresses = async () => {
     try {
@@ -31,6 +36,16 @@ const Profile = () => {
       setAddresses(data);
     } catch (error) {
       toast.error('Failed to load addresses');
+    }
+  };
+
+  const fetchOrders = async () => {
+    try {
+      const { data } = await ordersAPI.getAll();
+      setOrders(data || []);
+    } catch (error) {
+      console.error('Failed to load orders:', error);
+      setOrders([]);
     }
   };
 
@@ -95,20 +110,12 @@ const Profile = () => {
           
           <div className="profile__stats">
             <div className="profile__stat">
-              <div className="profile__stat-value">12</div>
+              <div className="profile__stat-value">{orders.length}</div>
               <div className="profile__stat-label">Orders</div>
             </div>
             <div className="profile__stat">
-              <div className="profile__stat-value">3</div>
+              <div className="profile__stat-value">{wishlistItems.length}</div>
               <div className="profile__stat-label">Wishlist</div>
-            </div>
-            <div className="profile__stat">
-              <div className="profile__stat-value">5</div>
-              <div className="profile__stat-label">Reviews</div>
-            </div>
-            <div className="profile__stat">
-              <div className="profile__stat-value">2</div>
-              <div className="profile__stat-label">Coupons</div>
             </div>
           </div>
         </div>
@@ -264,9 +271,9 @@ const Profile = () => {
           )}
           
           <div className="profile__address-list">
-            {addresses.map((address) => (
+            {Array.isArray(addresses) && addresses.map((address) => (
               <div 
-                key={address._id} 
+                key={`address-${address._id || Math.random().toString(36).substr(2, 9)}`}
                 className={`profile__address-card ${address.isDefault ? 'profile__address-card--default' : ''}`}
                 aria-label={address.isDefault ? 'Default address' : 'Address'}
               >
@@ -294,7 +301,7 @@ const Profile = () => {
               </div>
             ))}
             
-            {addresses.length === 0 && !showAddressForm && (
+            {(!addresses || addresses.length === 0) && !showAddressForm && (
               <div className="profile__empty-state">
                 <MapPin className="profile__empty-icon" size={32} />
                 <p className="profile__empty-text">No addresses saved yet</p>

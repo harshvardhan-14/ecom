@@ -4,7 +4,7 @@ import { LogIn, Loader2 } from 'lucide-react';
 import { authAPI } from '../lib/api';
 import { toast } from 'react-hot-toast';
 import useAuthStore from '../store/authStore';
-
+import '../styles/pages/Login.css';
 
 export default function Login() {
   const navigate = useNavigate();

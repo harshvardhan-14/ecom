@@ -17,15 +17,17 @@ const useCartStore = create((set, get) => ({
     }
   },
 
-addToCart: async (product, quantity = 1) => {
+  addToCart: async (product, quantity = 1) => {
     try {
       // Handle both product object and product ID
       const productId = typeof product === 'object' ? product.id : product;
       const qty = typeof product === 'object' && product.quantity ? product.quantity : quantity;
       
+      console.log('Adding to cart:', { productId, qty }); // Debug log
       await cartAPI.addToCart(productId, qty);
       await get().fetchCart();
     } catch (error) {
+      console.error('Cart store error:', error);
       throw error;
     }
   },

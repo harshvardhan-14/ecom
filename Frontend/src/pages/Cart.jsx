@@ -12,7 +12,13 @@ import '../../src/styles/pages/Cart.css';
 const getProductImage = (images) => {
   if (!images || images.length === 0) return assets.product_img1;
   
-  const imagePath = images[0];
+  const imagePath = Array.isArray(images) ? images[0] : images;
+  
+  // If it's already a full URL (http/https), return it directly
+  if (typeof imagePath === 'string' && (imagePath.startsWith('http://') || imagePath.startsWith('https://'))) {
+    return imagePath;
+  }
+  
   // Convert database path to imported image
   const imageMap = {
     '/product_img1.png': assets.product_img1,
@@ -43,17 +49,17 @@ export default function Cart() {
     }
   }, [isAuthenticated, fetchCart]);
 
-  const handleUpdateQuantity = async (itemId, newQuantity) => {
+  const handleUpdateQuantity = async (productId, newQuantity) => {
     try {
-      await updateQuantity(itemId, newQuantity);
+      await updateQuantity(productId, newQuantity);
     } catch (error) {
       toast.error(error.response?.data?.error || 'Failed to update quantity');
     }
   };
 
-  const handleRemoveItem = async (itemId) => {
+  const handleRemoveItem = async (productId) => {
     try {
-      await removeItem(itemId);
+      await removeItem(productId);
       toast.success('Item removed from cart');
     } catch (error) {
       toast.error('Failed to remove item');
@@ -138,7 +144,7 @@ export default function Cart() {
 
                 <div className="cart-item__actions">
                   <button
-                    onClick={() => handleRemoveItem(item.id)}
+                    onClick={() => handleRemoveItem(item.product.id)}
                     className="btn btn--text btn--remove"
                   >
                     <Trash2 size={16} />
@@ -147,7 +153,7 @@ export default function Cart() {
 
                   <div className="quantity-selector">
                     <button
-                      onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                      onClick={() => handleUpdateQuantity(item.product.id, item.quantity - 1)}
                       disabled={item.quantity <= 1}
                       className="quantity-selector__btn"
                       aria-label="Decrease quantity"
@@ -156,7 +162,7 @@ export default function Cart() {
                     </button>
                     <span className="quantity-selector__value">{item.quantity}</span>
                     <button
-                      onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                      onClick={() => handleUpdateQuantity(item.product.id, item.quantity + 1)}
                       disabled={item.quantity >= item.product.stock}
                       className="quantity-selector__btn"
                       aria-label="Increase quantity"

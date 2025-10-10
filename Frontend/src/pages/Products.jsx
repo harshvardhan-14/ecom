@@ -1,74 +1,11 @@
-
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import useAuthStore from '../store/authStore';
-import { dummyData } from '../assets/dummyData';
-const ALL_CATEGORIES = dummyData.categories || [];
+import { productsAPI, categoriesAPI } from '../lib/api';
 import toast from 'react-hot-toast';
 import '../../src/styles/pages/Products.css';
-
-// Mock API services
-const ProductService = {
-  getCategories: () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ 
-          data: ALL_CATEGORIES.map(cat => ({
-            id: cat.id,
-            name: cat.name,
-            slug: cat.slug
-          }))
-        });
-      }, 300);
-    });
-  },
-  
-  getProducts: (params = {}) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const { search, categoryId, page = 1, limit = 8 } = params;
-        let filteredProducts = [...dummyData.products];
-        
-        // Apply search filter
-        if (search) {
-          const searchLower = search.toLowerCase();
-          filteredProducts = filteredProducts.filter(p => 
-            p.name.toLowerCase().includes(searchLower) ||
-            (p.description && p.description.toLowerCase().includes(searchLower))
-          );
-        }
-        
-        // Apply category filter
-        if (categoryId) {
-          filteredProducts = filteredProducts.filter(p => 
-            p.categoryId === categoryId
-          );
-        }
-        
-        // Pagination
-        const startIndex = (page - 1) * limit;
-        const endIndex = startIndex + limit;
-        const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
-        const totalPages = Math.ceil(filteredProducts.length / limit);
-        
-        resolve({
-          data: {
-            products: paginatedProducts,
-            pagination: {
-              currentPage: page,
-              totalPages,
-              totalItems: filteredProducts.length,
-              hasNextPage: endIndex < filteredProducts.length,
-              hasPrevPage: startIndex > 0
-            }
-          }
-        });
-      }, 500);
-    });
-  }
-};
 
 export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -94,7 +31,7 @@ export default function Products() {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const { data } = await ProductService.getCategories();
+        const { data } = await categoriesAPI.getAll();
         setCategories(data);
       } catch (error) {
         console.error('Error loading categories:', error);
@@ -113,15 +50,21 @@ export default function Products() {
     
     try {
       setLoading(true);
-      const { data } = await ProductService.getProducts({
+      const { data } = await productsAPI.getAll({
         search,
-        categoryId: category,
+        category,
         page,
         limit: 8
       });
       
-      setProducts(data.products);
-      setPagination(data.pagination);
+      setProducts(data.products || data);
+      setPagination(data.pagination || {
+        currentPage: page,
+        totalPages: 1,
+        totalItems: (data.products || data).length,
+        hasNextPage: false,
+        hasPrevPage: false
+      });
     } catch (error) {
       console.error('Error fetching products:', error);
       toast.error('Failed to load products');

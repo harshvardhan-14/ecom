@@ -1,7 +1,7 @@
 //import { Link, useNavigate } from 'react-router-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, User, LogOut, Package, LayoutDashboard, Search, Moon, Sun, Heart } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState , useRef } from 'react';
 import useAuthStore from '../store/authStore';
 import useCartStore from '../store/cartStore';
 import useWishlistStore from '../store/wishlistStore';
@@ -11,7 +11,23 @@ import '../styles/components/Navbar.css';
 export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState('');
   const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
+  const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const { user, isAuthenticated, logout, checkAuth } = useAuthStore();
   const { items, fetchCart } = useCartStore();
@@ -133,14 +149,29 @@ export default function Navbar() {
                 <Link to="/orders" className="orders-link">
                   <Package className="icon" />
                 </Link>
-                <div className="dropdown">
-                  <button className="user-menu-button">
+                <div className="dropdown" ref={dropdownRef}>
+                  <button 
+                    className="user-menu-button" 
+                    onClick={() => setShowDropdown(!showDropdown)}
+                    aria-expanded={showDropdown}
+                    aria-haspopup="true"
+                  >
                     <User className="icon" />
                   </button>
-                  <div className="dropdown-menu">
-                    <Link to="/profile" className="dropdown-menu-item">Profile</Link>
-                    <Link to="/orders" className="dropdown-menu-item">Orders</Link>
-                    <button onClick={handleLogout} className="dropdown-menu-item destructive">
+                  <div className={`dropdown-menu ${showDropdown ? 'show' : ''}`}>
+                    <Link to="/profile" className="dropdown-menu-item" onClick={() => setShowDropdown(false)}>
+                      Profile
+                    </Link>
+                    <Link to="/orders" className="dropdown-menu-item" onClick={() => setShowDropdown(false)}>
+                      Orders
+                    </Link>
+                    <button 
+                      onClick={() => {
+                        setShowDropdown(false);
+                        handleLogout();
+                      }} 
+                      className="dropdown-menu-item destructive"
+                    >
                       Sign out
                     </button>
                   </div>

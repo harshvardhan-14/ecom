@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { UserPlus, Loader2 } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import { toast } from 'react-hot-toast';
+import '../styles/pages/Register.css';
 
 
 const Register = () => {

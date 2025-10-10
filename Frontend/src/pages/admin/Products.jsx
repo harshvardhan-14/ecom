@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Plus, Edit, Trash2, Search, Loader2, Package } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState, useCallback } from 'react';
+import { Plus, Edit, Trash2, Search, Loader2, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { formatPrice } from '../../lib/utils';
 import { assets } from '../../assets/assets';
 import { productsAPI, categoriesAPI } from '../../lib/api';
@@ -14,6 +14,12 @@ const getProductImage = (images) => {
   if (!images || images.length === 0) return assets.product_img1;
   
   const imagePath = Array.isArray(images) ? images[0] : images;
+  
+  // If it's already a full URL (http/https), return it directly
+  if (typeof imagePath === 'string' && (imagePath.startsWith('http://') || imagePath.startsWith('https://'))) {
+    return imagePath;
+  }
+  
   const imageMap = {
     '/product_img1.png': assets.product_img1,
     '/product_img2.png': assets.product_img2,
@@ -33,12 +39,15 @@ const getProductImage = (images) => {
 };
 
 export default function AdminProducts() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [search, setSearch] = useState('');
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [categoryFilter, setCategoryFilter] = useState(searchParams.get('category') || 'all');
+  const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -55,17 +64,71 @@ export default function AdminProducts() {
 
   const fetchData = async () => {
     try {
+      setLoading(true);
       const [productsRes, categoriesRes] = await Promise.all([
         productsAPI.getAll({ limit: 100 }),
         categoriesAPI.getAll(),
       ]);
-      setProducts(productsRes.data.products);
+      setProducts(productsRes.data.products || productsRes.data);
       setCategories(categoriesRes.data);
     } catch (error) {
+      console.error('Error fetching data:', error);
       toast.error('Failed to load data');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Update URL when search or filter changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchTerm) params.set('search', searchTerm);
+    if (categoryFilter && categoryFilter !== 'all') params.set('category', categoryFilter);
+    setSearchParams(params);
+  }, [searchTerm, categoryFilter, setSearchParams]);
+
+  // Sort products
+  const sortedProducts = useCallback(() => {
+    const sortableProducts = [...products];
+    if (sortConfig.key) {
+      sortableProducts.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableProducts;
+  }, [products, sortConfig]);
+
+  // Filter products based on search and category
+  const filteredProducts = sortedProducts().filter((product) => {
+    const matchesSearch = 
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = 
+      categoryFilter === 'all' || 
+      product.categoryId === categoryFilter || 
+      product.category?.id === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
+
+  // Handle sort request
+  const requestSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Get sort indicator
+  const getSortIndicator = (key) => {
+    if (sortConfig.key !== key) return null;
+    return sortConfig.direction === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />;
   };
 
   const handleSubmit = async (e) => {
@@ -132,10 +195,6 @@ export default function AdminProducts() {
       featured: false,
     });
   };
-
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(search.toLowerCase())
-  );
 
   if (loading) {
     return (
@@ -286,34 +345,96 @@ export default function AdminProducts() {
         </div>
       )}
 
-      {/* Search */}
-      <div className="search-filter-bar">
+      {/* Search and Filter */}
+      <div className="search-filter-container">
         <div className="relative" style={{ flex: 1 }}>
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
             type="text"
-            placeholder="Search products..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search products by name or description..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
-            style={{ paddingLeft: '2.5rem' }}
           />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X size={18} />
+            </button>
+          )}
         </div>
+        <select
+          className="filter-select"
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+        >
+          <option value="all">All Categories</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Products Table */}
       <div className="data-table-container">
         <div className="data-table-header">
-          <h2 className="data-table-title">All Products ({filteredProducts.length})</h2>
+          <h2 className="data-table-title">
+            {filteredProducts.length} {filteredProducts.length === 1 ? 'Product' : 'Products'} 
+            {searchTerm || categoryFilter !== 'all' ? ' found' : ''}
+          </h2>
         </div>
         <table className="data-table">
           <thead>
             <tr>
-              <th>Product</th>
-              <th>Category</th>
-              <th>Price</th>
-              <th>Stock</th>
-              <th>Featured</th>
+              <th 
+                className="cursor-pointer hover:bg-gray-50"
+                onClick={() => requestSort('name')}
+              >
+                <div className="flex items-center">
+                  Product
+                  {getSortIndicator('name')}
+                </div>
+              </th>
+              <th 
+                className="cursor-pointer hover:bg-gray-50"
+                onClick={() => requestSort('category')}
+              >
+                <div className="flex items-center">
+                  Category
+                  {getSortIndicator('category')}
+                </div>
+              </th>
+              <th 
+                className="cursor-pointer hover:bg-gray-50"
+                onClick={() => requestSort('price')}
+              >
+                <div className="flex items-center">
+                  Price
+                  {getSortIndicator('price')}
+                </div>
+              </th>
+              <th 
+                className="cursor-pointer hover:bg-gray-50"
+                onClick={() => requestSort('stock')}
+              >
+                <div className="flex items-center">
+                  Stock
+                  {getSortIndicator('stock')}
+                </div>
+              </th>
+              <th 
+                className="cursor-pointer hover:bg-gray-50"
+                onClick={() => requestSort('featured')}
+              >
+                <div className="flex items-center">
+                  Featured
+                  {getSortIndicator('featured')}
+                </div>
+              </th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -322,12 +443,14 @@ export default function AdminProducts() {
                 <tr key={product.id} className="border-t hover:bg-gray-50">
                   <td className="py-3 px-4">
                     <div className="flex items-center space-x-3">
-                      <img
-                        src={getProductImage(product.images)}
-                        alt={product.name}
-                        className="w-12 h-12 object-cover rounded"
-                      />
-                      <div>
+                      <div className="product-image-wrapper">
+                        <img
+                          src={getProductImage(product.images)}
+                          alt={product.name}
+                          className="product-image"
+                        />
+                      </div>
+                      <div className="min-w-0">
                         <p className="font-medium">{product.name}</p>
                         <p className="text-sm text-gray-600 line-clamp-1">
                           {product.description}
